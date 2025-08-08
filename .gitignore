@@ -35,3 +35,36 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Logs
+*.log
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# iOS specific
+ios/Pods/
+ios/build/
+xcuserdata
+*.xcworkspace
+!*.xcworkspace/contents.xcworkspacedata
+
+# Android specific
+android/.gradle
+android/app/build/
+android/app/src/main/assets/
+
+# Flipper (React Native debugging tool)
+ios/Pods/Flipper
+ios/Pods/Flipper-Folly
+ios/Pods/FMDB
+ios/Pods/FlipperKit
+ios/Pods/SocketRocket
+ios/Pods/CocoaAsyncSocket
