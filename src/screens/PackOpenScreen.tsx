@@ -11,13 +11,17 @@ import {
 import { useGameStore } from '../state/store';
 import { getRandomMini, miniCollections, dummyMinis } from '../data/minis';
 import MiniCard from '../components/MiniCard';
+import GradientBackground from '../components/GradientBackground';
+import { colors, shadow } from '../lib/theme';
+import * as Haptics from 'expo-haptics';
 
 export default function PackOpenScreen() {
-  const { gems, pityCounter, addToInventory, setGems, setPityCounter } = useGameStore();
+  const { gems, pityCounter, addToInventory, setGems, setPityCounter, hapticsEnabled } = useGameStore();
   const [openedMinis, setOpenedMinis] = useState<any[]>([]);
   const [isOpening, setIsOpening] = useState(false);
-  const [selectedBanner, setSelectedBanner] = useState('fantasy-heroes');
+  const [selectedBanner, setSelectedBanner] = useState<keyof typeof miniCollections>('fantasy-heroes');
   const [scaleAnim] = useState(new Animated.Value(1));
+  const [oddsOpen, setOddsOpen] = useState(false);
 
   const PACK_COST = 10;
   const PITY_THRESHOLD = 30;
@@ -51,6 +55,9 @@ export default function PackOpenScreen() {
 
     // Simulate pack opening delay
     setTimeout(() => {
+      if (hapticsEnabled) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      }
       const newMinis: any[] = [];
       const currentPity = pityCounter + 1;
       
@@ -94,7 +101,8 @@ export default function PackOpenScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <GradientBackground>
+    <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Pack Opening</Text>
         <View style={styles.currencyContainer}>
@@ -105,6 +113,10 @@ export default function PackOpenScreen() {
 
       <View style={styles.bannerSection}>
         <Text style={styles.sectionTitle}>Select Banner</Text>
+        <Text style={styles.bannerSub}>Currently viewing: {miniCollections[selectedBanner]}</Text>
+        <Pressable onPress={() => setOddsOpen(!oddsOpen)}>
+          <Text style={styles.oddsLink}>{oddsOpen ? 'Hide odds' : 'Show odds & pity'}</Text>
+        </Pressable>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {Object.entries(miniCollections).map(([key, name]) => (
             <Pressable
@@ -113,7 +125,7 @@ export default function PackOpenScreen() {
                 styles.bannerButton,
                 selectedBanner === key && styles.selectedBanner
               ]}
-              onPress={() => setSelectedBanner(key)}
+              onPress={() => setSelectedBanner(key as keyof typeof miniCollections)}
             >
               <Text style={[
                 styles.bannerText,
@@ -125,6 +137,14 @@ export default function PackOpenScreen() {
           ))}
         </ScrollView>
       </View>
+
+      {oddsOpen && (
+        <View style={styles.oddsCard}>
+          <Text style={styles.infoTitle}>Odds & Pity</Text>
+          <Text style={styles.infoText}>Common: 65% • Rare: 22% • Epic: 10% • Legendary: 3%</Text>
+          <Text style={styles.infoText}>Pity: Rare+ guaranteed every {PITY_THRESHOLD} opens.</Text>
+        </View>
+      )}
 
       <View style={styles.packSection}>
         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
@@ -171,13 +191,13 @@ export default function PackOpenScreen() {
         <Text style={styles.infoText}>Pity system guarantees rare+ every {PITY_THRESHOLD} opens</Text>
       </View>
     </ScrollView>
+    </GradientBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
+    paddingBottom: 24,
   },
   header: {
     padding: 20,
@@ -186,7 +206,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: colors.textPrimary,
     marginBottom: 10,
   },
   currencyContainer: {
@@ -197,20 +217,36 @@ const styles = StyleSheet.create({
   gems: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#059669',
+    color: colors.success,
   },
   pity: {
     fontSize: 16,
-    color: '#6b7280',
+    color: colors.textSecondary,
   },
   bannerSection: {
     paddingHorizontal: 20,
     marginBottom: 20,
   },
+  bannerSub: {
+    color: '#64748b',
+    marginBottom: 4,
+  },
+  oddsLink: {
+    color: '#2563eb',
+    marginBottom: 8,
+    fontWeight: '600',
+  },
+  oddsCard: {
+    marginHorizontal: 20,
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.textPrimary,
     marginBottom: 12,
   },
   bannerButton: {
@@ -221,11 +257,11 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   selectedBanner: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: colors.brand,
   },
   bannerText: {
     fontSize: 14,
-    color: '#4b5563',
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   selectedBannerText: {
@@ -236,16 +272,12 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   packButton: {
-    backgroundColor: '#10b981',
+    backgroundColor: colors.success,
     borderRadius: 16,
     padding: 20,
     alignItems: 'center',
     minWidth: 200,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    ...shadow.raised,
   },
   disabledPack: {
     backgroundColor: '#9ca3af',
@@ -272,7 +304,7 @@ const styles = StyleSheet.create({
   },
   clearButton: {
     padding: 8,
-    backgroundColor: '#ef4444',
+    backgroundColor: colors.danger,
     borderRadius: 8,
   },
   clearButtonText: {
@@ -295,12 +327,12 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.textPrimary,
     marginBottom: 8,
   },
   infoText: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textSecondary,
     marginBottom: 4,
   },
 });

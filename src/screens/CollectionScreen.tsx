@@ -10,6 +10,9 @@ import {
 import { useGameStore, Mini } from '../state/store';
 import { miniCollections } from '../data/minis';
 import MiniCard from '../components/MiniCard';
+import GradientBackground from '../components/GradientBackground';
+import { colors, shadow } from '../lib/theme';
+import MiniDetailModal from '../components/MiniDetailModal';
 
 type FilterType = 'all' | 'common' | 'rare' | 'epic' | 'legendary';
 type SortType = 'name' | 'rarity' | 'collection' | 'count';
@@ -70,18 +73,22 @@ export default function CollectionScreen() {
 
   const filteredMinis = getFilteredAndSortedMinis();
   const stats = getCollectionStats();
+  const [selectedMini, setSelectedMini] = useState<Mini | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const renderMiniCard = ({ item }: { item: Mini }) => (
     <MiniCard 
       mini={item} 
       size="medium"
       onPress={() => {
-        // TODO: Open mini detail modal
+        setSelectedMini(item);
+        setModalVisible(true);
       }}
     />
   );
 
   return (
+    <GradientBackground>
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>My Collection</Text>
@@ -209,7 +216,13 @@ export default function CollectionScreen() {
           </Text>
         </View>
       )}
+      <MiniDetailModal
+        visible={modalVisible}
+        mini={selectedMini}
+        onClose={() => setModalVisible(false)}
+      />
     </View>
+    </GradientBackground>
   );
 }
 
@@ -226,7 +239,7 @@ const getFilterButtonColor = (rarity: string) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    paddingBottom: 12,
   },
   header: {
     padding: 20,
@@ -235,7 +248,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: colors.textPrimary,
     marginBottom: 16,
   },
   statsContainer: {
@@ -248,15 +261,15 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: colors.textPrimary,
   },
   statLabel: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textSecondary,
     marginTop: 4,
   },
   legendaryText: {
-    color: '#F59E0B',
+    color: colors.warning,
   },
   filtersSection: {
     paddingHorizontal: 20,
@@ -265,7 +278,7 @@ const styles = StyleSheet.create({
   filterTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.textPrimary,
     marginBottom: 8,
   },
   filterButton: {
@@ -276,11 +289,11 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   activeFilterButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: colors.brand,
   },
   filterText: {
     fontSize: 13,
-    color: '#4b5563',
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   activeFilterText: {
@@ -298,11 +311,11 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   activeSortButton: {
-    backgroundColor: '#10b981',
+    backgroundColor: colors.success,
   },
   sortText: {
     fontSize: 13,
-    color: '#4b5563',
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   activeSortText: {
@@ -321,13 +334,13 @@ const styles = StyleSheet.create({
   emptyStateTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.textPrimary,
     marginBottom: 8,
     textAlign: 'center',
   },
   emptyStateText: {
     fontSize: 16,
-    color: '#6b7280',
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
   },

@@ -11,13 +11,20 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useGameStore } from '../state/store';
 import { getRandomMini } from '../data/minis';
 import MiniCard from '../components/MiniCard';
+import GradientBackground from '../components/GradientBackground';
+import { colors, radius, shadow, typography } from '../lib/theme';
+import * as Haptics from 'expo-haptics';
+import { useNavigation } from '@react-navigation/native';
 
 export default function HomeScreen() {
+  const navigation = useNavigation<any>();
   const { 
     gems, 
+    shards,
     inventory, 
     addToInventory, 
-    setGems 
+    setGems,
+    hapticsEnabled,
   } = useGameStore();
   
   const [dailyPackClaimed, setDailyPackClaimed] = useState(false);
@@ -78,6 +85,9 @@ export default function HomeScreen() {
     // Store claim date
     await AsyncStorage.setItem('lastDailyPackClaim', new Date().toDateString());
     
+    if (hapticsEnabled) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
     Alert.alert(
       'Daily Pack Claimed!', 
       `You received ${newMini.name} and 50 gems!`
@@ -96,7 +106,8 @@ export default function HomeScreen() {
   const stats = getCollectionStats();
 
   return (
-    <ScrollView style={styles.container}>
+    <GradientBackground>
+    <ScrollView contentContainerStyle={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Pocket Minis</Text>
@@ -106,6 +117,10 @@ export default function HomeScreen() {
           <View style={styles.currencyItem}>
             <Text style={styles.currencyAmount}>💎 {gems}</Text>
             <Text style={styles.currencyLabel}>Gems</Text>
+          </View>
+          <View style={styles.currencyItem}>
+            <Text style={styles.currencyAmount}>🔷 {shards}</Text>
+            <Text style={styles.currencyLabel}>Shards</Text>
           </View>
           <View style={styles.currencyItem}>
             <Text style={styles.currencyAmount}>{stats.total}</Text>
@@ -198,19 +213,19 @@ export default function HomeScreen() {
       <View style={styles.actionsSection}>
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.actionsGrid}>
-          <Pressable style={styles.actionButton}>
+          <Pressable style={styles.actionButton} onPress={() => navigation.navigate('Packs')}>
             <Text style={styles.actionEmoji}>📦</Text>
             <Text style={styles.actionText}>Open Packs</Text>
           </Pressable>
-          <Pressable style={styles.actionButton}>
+          <Pressable style={styles.actionButton} onPress={() => navigation.navigate('Diorama')}>
             <Text style={styles.actionEmoji}>🏠</Text>
             <Text style={styles.actionText}>Build Diorama</Text>
           </Pressable>
-          <Pressable style={styles.actionButton}>
+          <Pressable style={styles.actionButton} onPress={() => navigation.navigate('Trade')}>
             <Text style={styles.actionEmoji}>🔄</Text>
             <Text style={styles.actionText}>Trade</Text>
           </Pressable>
-          <Pressable style={styles.actionButton}>
+          <Pressable style={styles.actionButton} onPress={() => navigation.navigate('Profile')}>
             <Text style={styles.actionEmoji}>👤</Text>
             <Text style={styles.actionText}>Profile</Text>
           </Pressable>
@@ -232,6 +247,7 @@ export default function HomeScreen() {
         </View>
       </View>
     </ScrollView>
+    </GradientBackground>
   );
 }
 
@@ -247,25 +263,24 @@ const getRarityColor = (rarity: string) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
+    paddingBottom: 40,
   },
   header: {
     padding: 20,
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    backgroundColor: colors.surface,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: colors.textPrimary,
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6b7280',
+    color: colors.textSecondary,
     marginBottom: 20,
   },
   currencyContainer: {
@@ -278,15 +293,15 @@ const styles = StyleSheet.create({
   currencyAmount: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: colors.textPrimary,
   },
   currencyLabel: {
     fontSize: 12,
-    color: '#6b7280',
+    color: colors.textSecondary,
     marginTop: 4,
   },
   legendaryText: {
-    color: '#F59E0B',
+    color: colors.warning,
   },
   dailySection: {
     padding: 20,
@@ -294,21 +309,17 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.textPrimary,
     marginBottom: 12,
   },
   dailyCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...shadow.card,
   },
   dailyInfo: {
     flex: 1,
@@ -316,15 +327,15 @@ const styles = StyleSheet.create({
   dailyTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.textPrimary,
   },
   dailySubtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textSecondary,
     marginTop: 4,
   },
   dailyButton: {
-    backgroundColor: '#10b981',
+    backgroundColor: colors.success,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
@@ -338,23 +349,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   disabledButtonText: {
-    color: '#6b7280',
+    color: colors.textSecondary,
   },
   featuredSection: {
     padding: 20,
     paddingTop: 0,
   },
   featuredCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...shadow.card,
   },
   featuredInfo: {
     flex: 1,
@@ -363,11 +370,11 @@ const styles = StyleSheet.create({
   featuredName: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.textPrimary,
   },
   featuredDescription: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.textSecondary,
     marginVertical: 4,
   },
   featuredRarity: {
@@ -384,24 +391,20 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...shadow.card,
   },
   statNumber: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: colors.textPrimary,
   },
   statLabel: {
     fontSize: 12,
-    color: '#6b7280',
+    color: colors.textSecondary,
     textAlign: 'center',
     marginTop: 4,
   },
@@ -415,16 +418,12 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   actionButton: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
     width: '47%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...shadow.card,
   },
   actionEmoji: {
     fontSize: 24,
@@ -433,7 +432,7 @@ const styles = StyleSheet.create({
   actionText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#1f2937',
+    color: colors.textPrimary,
   },
   tipsSection: {
     padding: 20,

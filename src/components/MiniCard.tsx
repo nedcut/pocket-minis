@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Mini } from '../state/store';
+import { colors, radius, shadow, typography, rarityBackground } from '../lib/theme';
 
 interface MiniCardProps {
   mini: Mini | Omit<Mini, 'count'>;
@@ -9,19 +10,7 @@ interface MiniCardProps {
   size?: 'small' | 'medium' | 'large';
 }
 
-const RARITY_COLORS = {
-  common: '#9CA3AF',
-  rare: '#3B82F6', 
-  epic: '#8B5CF6',
-  legendary: '#F59E0B',
-};
-
-const RARITY_BACKGROUNDS = {
-  common: '#F3F4F6',
-  rare: '#EBF8FF',
-  epic: '#F3E8FF', 
-  legendary: '#FFFBEB',
-};
+const RARITY_COLORS = colors.rarity;
 
 const SIZE_CONFIGS = {
   small: {
@@ -49,7 +38,7 @@ export default function MiniCard({
 }: MiniCardProps) {
   const config = SIZE_CONFIGS[size];
   const rarityColor = RARITY_COLORS[mini.rarity];
-  const rarityBackground = RARITY_BACKGROUNDS[mini.rarity];
+  const rarityBgColor = rarityBackground[mini.rarity];
 
   return (
     <Pressable
@@ -58,8 +47,8 @@ export default function MiniCard({
         styles.container,
         {
           width: config.container,
-          height: config.container + 40,
-          backgroundColor: rarityBackground,
+          height: config.container + 48,
+          backgroundColor: rarityBgColor,
           borderColor: rarityColor,
         }
       ]}
@@ -92,39 +81,40 @@ export default function MiniCard({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 12,
+    borderRadius: radius.md,
     borderWidth: 2,
-    padding: 8,
+    padding: 10,
     alignItems: 'center',
-    margin: 4,
+    margin: 6,
+    ...shadow.card,
   },
   imageContainer: {
     width: '80%',
     aspectRatio: 1,
-    borderRadius: 8,
+    borderRadius: radius.sm,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   placeholder: {
     color: 'white',
     fontWeight: 'bold',
   },
   name: {
-    fontWeight: '600',
+    fontWeight: '700',
     textAlign: 'center',
-    color: '#1F2937',
+    color: colors.textPrimary,
     marginBottom: 4,
   },
   rarity: {
     fontSize: 10,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   countBadge: {
     position: 'absolute',
     top: 4,
     right: 4,
-    backgroundColor: '#EF4444',
+    backgroundColor: colors.danger,
     borderRadius: 10,
     paddingHorizontal: 6,
     paddingVertical: 2,

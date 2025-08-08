@@ -1,12 +1,36 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import GradientBackground from '../components/GradientBackground';
+import { colors } from '../lib/theme';
+import { useGameStore } from '../state/store';
 
 export default function DioramaScreen() {
+  const { diorama, placeMiniInDiorama, inventory } = useGameStore();
+  const firstOwnedMini = inventory[0]?.id ?? null;
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Diorama</Text>
-      <Text style={styles.subtitle}>Create and customize your displays</Text>
-    </View>
+    <GradientBackground>
+      <View style={styles.container}>
+        <Text style={styles.title}>Diorama</Text>
+        <Text style={styles.subtitle}>Create and customize your displays</Text>
+
+        <View style={styles.grid}>
+          {diorama.map((miniId, index) => (
+            <Pressable
+              key={index}
+              style={[styles.cell, { borderColor: miniId ? colors.brand : '#D1D5DB' }]}
+              onPress={() => placeMiniInDiorama(index, miniId ? null : firstOwnedMini)}
+            >
+              <Text style={styles.cellText}>{miniId ? '🧸' : '+'}</Text>
+            </Pressable>
+          ))}
+        </View>
+
+        <Text style={{ marginTop: 10, color: colors.textSecondary }}>
+          Tap a cell to place/remove your first owned mini
+        </Text>
+      </View>
+    </GradientBackground>
   );
 }
 
@@ -15,7 +39,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
   },
   title: {
     fontSize: 24,
@@ -24,6 +47,24 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: colors.textSecondary,
+  },
+  grid: {
+    width: 300,
+    aspectRatio: 1,
+    marginTop: 20,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  cell: {
+    width: '33.3333%',
+    height: '33.3333%',
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cellText: {
+    fontSize: 22,
+    color: colors.textSecondary,
   },
 });
